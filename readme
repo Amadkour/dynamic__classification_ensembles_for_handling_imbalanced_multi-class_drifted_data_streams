@@ -1,0 +1,42 @@
+This code running on python interpreter [3.9]
+
+Please install these package firstly:
+DESlib	0.3.5
+Pillow	9.4.0
+PySimpleGUI	4.60.4
+arff	0.9
+contourpy	1.0.7
+cycler	0.11.0
+fonttools	4.39.2
+gevent	22.10.2
+greenlet	2.0.2
+igraph	0.10.4
+imbalanced-learn	0.10.1
+importlib-resources	5.12.0
+joblib	1.2.0
+kiwisolver	1.4.4
+matplotlib	3.7.1
+mean	0.1.0
+npy-reader	1.1.2
+numpy	1.23.3
+packaging	23.0
+pandas	1.4.4
+problexity	0.5.6
+protobuf	4.22.1
+pyparsing	3.0.9
+python-dateutil	2.8.2
+recall	0.2.1
+scikit-learn	1.2.2
+scikit-multiflow	0.5.3
+scipy	1.10.1
+setuptools	60.2.0
+sortedcontainers	2.4.0
+stream-learn	0.8.24
+tabulate	0.9.0
+texttable	1.6.7
+threadpoolctl	3.1.0
+tqdm	4.65.0
+wheel	0.37.1
+zipp	3.15.0
+zope.event	4.6
+zope.interface	6.0
