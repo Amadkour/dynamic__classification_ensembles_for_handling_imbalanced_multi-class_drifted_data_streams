@@ -1,15 +1,10 @@
-import threading
 import time
 
-from skmultiflow.drift_detection import DDM, ADWIN
+from skmultiflow.drift_detection import DDM
 
-import csm
 import numpy as np
 import helper as h
-from tqdm import tqdm
-import multiprocessing
-from csm import OOB, UOB, SampleWeightedMetaEstimator, Dumb, MDET, SEA, StratifiedBagging
-from strlearn.evaluators import TestThenTrain
+from csm import SEA, StratifiedBagging
 from sklearn.naive_bayes import GaussianNB
 from strlearn.metrics import (
     balanced_accuracy_score,
@@ -19,15 +14,13 @@ from strlearn.metrics import (
     recall,
     specificity
 )
-import sys
 from sklearn.base import clone
-from sklearn.tree import DecisionTreeClassifier
-from skmultiflow.trees import HoeffdingTree, HoeffdingTreeClassifier
+from skmultiflow.trees import HoeffdingTreeClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC
 
 # Select streams and methods
-from experiments.train_and_test_stratigy import MyTestThenTrain
+from csm.train_and_test_stratigy import MyTestThenTrain
 
 streams = h.realstreams()
 
