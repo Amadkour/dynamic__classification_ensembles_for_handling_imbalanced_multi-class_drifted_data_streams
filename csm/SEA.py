@@ -8,7 +8,6 @@ import numpy as np
 from imblearn.over_sampling import RandomOverSampler, BorderlineSMOTE
 from imblearn.under_sampling import RandomUnderSampler, CondensedNearestNeighbour
 from deslib.des import KNORAE
-from utils import KNORAU
 from strlearn.metrics import balanced_accuracy_score
 
 

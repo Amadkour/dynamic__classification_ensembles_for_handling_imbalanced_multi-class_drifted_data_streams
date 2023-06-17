@@ -1,6 +1,6 @@
 import time
 
-from skmultiflow.drift_detection import DDM
+from skmultiflow.drift_detection import DDM, ADWIN
 
 import numpy as np
 import helper as h
@@ -62,8 +62,8 @@ ht_3 = SEA(base_estimator=StratifiedBagging(base_estimator=HoeffdingTreeClassifi
 def worker(i, stream_n):
     stream = streams[stream_n]
     drift_methods = [
-        # ADWIN(),
-                     DDM()
+        ADWIN(),
+                     # DDM()
     ]
     classifiers_name = [
         # 'svm',
