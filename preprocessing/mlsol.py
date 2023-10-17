@@ -1,7 +1,6 @@
 import numpy as np
 from sklearn.neighbors import NearestNeighbors
 
-
 import numpy as np
 from sklearn.neighbors import NearestNeighbors
 
@@ -16,30 +15,24 @@ from sklearn.utils.validation import check_is_fitted
 
 
 class MLSOL:
-    def __init__(self, k=5, metric="euclidean"):
+    def __init__(self, scale=0.1):
         self.sampling_strategy_ = None
         self.n_classes_ = None
         self.classes_ = None
-        self.k = k
-        self.metric = metric
+        self.k = 3
+        self.metric = "euclidean"
+        self.scale=scale
 
     def fit_resample(self, X, y):
         X, y = check_array(X), np.asarray(y)
-
         self.classes_ = np.unique(y)
         self.n_classes_ = len(self.classes_)
         self.sampling_strategy_ = {self.classes_[i]: np.sum(y == self.classes_[i]) for i in range(self.n_classes_)}
-
-        max_imb = max(self.sampling_strategy_.values()) / np.mean(list(self.sampling_strategy_.values()))
-        nn_indices = self._find_neighbors(X, y, max_imb)
+        nn_indices = self._find_neighbors(X, y)
         synth_X, synth_y = self._generate_samples(X, y.astype(int), nn_indices)
+        return synth_X, synth_y
 
-        X_resampled = np.concatenate([X, synth_X], axis=0)
-        y_resampled = np.concatenate([y, synth_y], axis=0)
-
-        return X_resampled, y_resampled
-
-    def _find_neighbors(self, X, y, max_imb):
+    def _find_neighbors(self, X, y):
         self.knn = NearestNeighbors(n_neighbors=self.k, metric=self.metric)
         self.knn.fit(X)
 
@@ -50,12 +43,11 @@ class MLSOL:
         def compute_prob_dist(distances):
             weights = 1.0 / (distances + 0.000000001)
             return weights / np.sum(weights)
-
         prob_dists = np.apply_along_axis(compute_prob_dist, axis=1, arr=neighbor_dists)
         synth_samples = []
 
         for i, prob_dist in enumerate(prob_dists):
-            if np.max(prob_dist) > 0 and (self.sampling_strategy_[y[i]] / len(X)) < max_imb:
+            if np.max(prob_dist) > 0:
                 synth_sample = np.zeros(X.shape[1])
 
                 for j in range(X.shape[1]):
@@ -67,21 +59,25 @@ class MLSOL:
 
     def _generate_samples(self, X, y, nn_indices):
         synth_X = np.zeros((len(nn_indices), X.shape[1]))
-        synth_y = np.zeros(len(nn_indices), dtype=np.int)
+        synth_y = np.zeros(len(nn_indices), dtype=int)
 
         for i, nn in enumerate(nn_indices):
             nn_classes = y[nn]
             nn_classes = nn_classes.astype(int)  # convert to integers
 
             nn_count = np.bincount(nn_classes, minlength=len(self.classes_))
-            nn_count[y[i]] -= 1
+            index = 0
+            for i, value in enumerate(self.classes_):
+                if value == y[i]:
+                    index = i
 
-            if nn_count[y[i]] == 0:
-                nn_count[np.random.choice(self.classes_)] += 1
+            nn_count[index] -= 1
 
+            if nn_count[index] == 0:
+                nn_count[np.where(self.classes_ == np.random.choice(self.classes_))[0]] += 1
             max_class = np.argmax(nn_count)
             max_class_count = nn_count[max_class]
-            noise = np.random.normal(scale=0.1, size=(X.shape[1],))
+            noise = np.random.normal(scale=self.scale, size=(X.shape[1],))
 
             synth_sample = X[i, :] + noise
 

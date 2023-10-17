@@ -95,8 +95,13 @@ def nearest_neighbour(X):
     return
     indices: list of list, index of 5 NN of each element in X
     """
-    nbs = NearestNeighbors(n_neighbors=5, metric='euclidean', algorithm='kd_tree').fit(X)
-    euclidean, indices = nbs.kneighbors(X)
+    nbs = NearestNeighbors(n_neighbors=3, metric='euclidean', algorithm='kd_tree').fit(X)
+    indices = []
+    try:
+        euclidean, indices = nbs.kneighbors(X)
+    except:
+        euclidean, indices = nbs.kneighbors(X,n_neighbors=1)
+
     return indices
 
 

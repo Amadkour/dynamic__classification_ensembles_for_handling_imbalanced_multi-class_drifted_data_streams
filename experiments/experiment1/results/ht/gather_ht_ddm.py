@@ -68,8 +68,8 @@ for i, clf in enumerate(clfs):
                     else:
                         print(stream)
                         results = np.load(
-                            # "results/experiment3_%s/%s.npy" % (clf, stream)
-                            "experiments/experiment1/results/ht/DDM/%s" % str(stream).replace('d97','d96') + '.npy'
+                            # "results-adwin/experiment3_%s/%s.npy" % (clf, stream)
+                            "experiments/experiment1/results-adwin/ht/DDM/%s" % str(stream).replace('d97','d96') + '.npy'
                         )
 
                         scores[i, j, k, l, m] = results

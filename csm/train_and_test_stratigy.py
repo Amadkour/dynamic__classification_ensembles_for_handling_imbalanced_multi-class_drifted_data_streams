@@ -1,6 +1,9 @@
+import time
+
 import numpy as np
 from sklearn.base import ClassifierMixin
 from sklearn.metrics import accuracy_score, balanced_accuracy_score
+from sklearn.neighbors import NearestNeighbors
 from tqdm import tqdm
 import pandas as pd
 from preprocessing.mlsol import MLSOL
@@ -8,64 +11,27 @@ from preprocessing.mlsmote import MLSMOTE
 
 
 class MyTestThenTrain:
-    """
-    Test Than Train data stream evaluator.
-
-    Implementation of test-then-train evaluation procedure,
-    where each individual data chunk is first used to test
-    the classifier and then it is used for training.
-
-    :type metrics: tuple or function
-    :param metrics: Tuple of metric functions or single metric function.
-    :type verbose: boolean
-    :param verbose: Flag to turn on verbose mode.
-
-    :var classes_: The class labels.
-    :var scores_: Values of metrics for each processed data chunk.
-    :vartype classes_: array-like, shape (n_classes, )
-    :vartype scores_: array-like, shape (stream.n_chunks, len(metrics))
-
-    :Example:
-
-    >>> import strlearn as sl
-    >>> stream = sl.streams.StreamGenerator()
-    >>> clf = sl.classifiers.AccumulatedSamplesClassifier()
-    >>> evaluator = sl.evaluators.TestThenTrainEvaluator()
-    >>> evaluator.process(clf, stream)
-    >>> print(evaluator.scores_)
-    ...
-    [[0.92       0.91879699 0.91848191 0.91879699 0.92523364]
-    [0.945      0.94648779 0.94624912 0.94648779 0.94240838]
-    [0.92       0.91936979 0.91936231 0.91936979 0.9047619 ]
-    ...
-    [0.92       0.91907051 0.91877671 0.91907051 0.9245283 ]
-    [0.885      0.8854889  0.88546135 0.8854889  0.87830688]
-    [0.935      0.93569212 0.93540766 0.93569212 0.93467337]]
-    """
 
     def __init__(
             self, metrics=(accuracy_score, balanced_accuracy_score), verbose=False
     ):
-        self.balanced_methods = []
+        self.balanced_methods_details = []
+        self.balanced_methods = ["MLSmote", "MLSOL", "adaptive"]
         if isinstance(metrics, (list, tuple)):
             self.metrics = metrics
         else:
             self.metrics = [metrics]
         self.verbose = verbose
+        self.chunk_length = 200
+        # Prepare scores table
+        self.scores = np.zeros(
+            (len(self.balanced_methods), self.chunk_length, len(self.metrics))
+        )
+        self.execution_time = np.zeros(len(self.balanced_methods))
+        self.overlappedItems = np.zeros((len(self.balanced_methods), self.chunk_length)
+                                        )
 
-    def process(self, stream, clfs, concept_drift_method=None, edit=None):
-        """
-        Perform learning procedure on data stream.
-
-        :param stream: Data stream as an object
-        :type stream: object
-        :param clfs: scikit-learn estimator of list of scikit-learn estimators.
-        :type clfs: tuple or function
-
-        Parameters
-        ----------
-        use_concept_drift
-        """
+    def process(self, stream, clfs, concept_drift_method=None, imbalance_method='mlsmote'):
         # Verify if pool of classifiers or one
         if isinstance(clfs, ClassifierMixin):
             self.clfs_ = [clfs]
@@ -75,94 +41,163 @@ class MyTestThenTrain:
         # Assign parameters
         self.stream_ = stream
 
-        # Prepare scores table
-        self.scores = np.zeros(
-            (len(self.clfs_), ((self.stream_.n_chunks - 1)), len(self.metrics))
-        )
         index = 0
         if self.verbose:
             pbar = tqdm(total=stream.n_chunks)
-        have_drift = 0
+        imbalance_pool = []
+        start_time = time.perf_counter()
         while True:
             chunk = stream.get_chunk()
+
             index += 1
             X, y = chunk
+            print(index)
 
             if self.verbose:
                 pbar.update(1)
-
             # Test
-            y_prediction = np.zeros(y.shape)
             if stream.previous_chunk is not None:
+
+                # prediction
                 for clfid, clf in enumerate(self.clfs_):
                     y_pred = clf.predict(X)
-                    for i in range(len(y_prediction)):
-                        y_prediction[i] = y_prediction[i] + y_pred[i]
 
-                    self.scores[clfid, stream.chunk_id - 1] = [
-                        metric(y, y_pred) for metric in self.metrics]
             if stream.previous_chunk is not None and concept_drift_method is not None:
                 '''concept drift'''
-                for score in y_prediction:
-                    concept_drift_method.add_element(score)
-                    if concept_drift_method.detected_change():
-                        have_drift += 1
-                print(index, 'have  score : ', have_drift)
-                if have_drift > 0:
-                    concept_drift_method.reset()
-                    have_drift = 0
-                    print('Change detected at chunk number', index)
-                    self.balanceding(X, y, edit)
+                for i, score in enumerate(y_pred):
+                    in_drift, in_warning = concept_drift_method.update(score)
+                    if in_drift:
+                        imbalance_pool.append(y[index])
+                if len(imbalance_pool) > 0:
+                    # concept_drift_method.reset()
+                    minority_classes = self.myProposedRation(y)
+                    if len(minority_classes) > 0:
+                        unique_elements, counts = np.unique(y, return_counts=True)
+                        for minority in minority_classes:
+                            X, y = self.balanceding(X, y, minority, stream.chunk_id, imbalance_method)
+                        unique_elements, counts = np.unique(y, return_counts=True)
+
                     # Train
+
                     [clf.partial_fit(X, y, self.stream_.classes_) for clf in self.clfs_]
+
             else:
-                print(index)
                 # Train
                 [clf.partial_fit(X, y, self.stream_.classes_) for clf in self.clfs_]
-                print(index, ' is finish')
+                # accuracy
+            predictions = [[0 for _ in range(len(y))] for _ in self.metrics]
+            for clfid, clf in enumerate(self.clfs_):
+                predictions[clfid] = clf.predict(X)
+            mean_prediction = np.mean(predictions, axis=0)
 
+            self.scores[self.balanced_methods.index(imbalance_method), stream.chunk_id - 1] = [
+                metric(y, mean_prediction) for metric in self.metrics]
             if stream.is_dry():
                 break
+        np.save("results-ddm/sub_score_" + imbalance_method, self.scores)
+        np.save("results-ddm/sub_overlapped_score_" + imbalance_method, self.overlappedItems)
+        np.save("results-ddm/sub_time_score_" + imbalance_method, self.execution_time)
+        finish_time = time.perf_counter()
+        self.execution_time[self.balanced_methods.index(imbalance_method)] = finish_time - start_time
 
-    def balanceding(self, X, y, edit=None):
-        if edit == 'mlsol':
-            X, y = MLSOL().fit_resample(X, y)
-        elif edit == 'mlsmote':
-            data = pd.DataFrame(X)
-            label = pd.get_dummies(y, prefix='class')
-            data, label = MLSMOTE(data, label, 50)
-            X = data.to_numpy()
-            y = np.array(label)
-        elif edit == 'dynamic':
+    def myProposedRation(self, labels):
+        unique_elements, counts = np.unique(labels, return_counts=True)
+        best_frq = np.mean(counts)
+        minority_classes = []
+        for i, frq in enumerate(counts):
+            if frq < (best_frq * 0.25):
+                minority_classes.append(unique_elements[i])
+
+        return minority_classes
+
+    synthetic_deviation = 0.1
+
+    def balanceding(self, X, y, minority_classes, stream_id, edit=None, scal=0.1):
+        indices_of_minority_classes = [i for i, element in enumerate(y) if element == minority_classes]
+        minority_instances = [X[i] for i in indices_of_minority_classes]
+        minority_label = [y[i] for i in indices_of_minority_classes]
+        unique_elements, counts = np.unique(y, return_counts=True)
+        if len(minority_instances):
+            minority_instances.append(minority_instances[0])
+            minority_instances.append(minority_instances[0])
+            minority_label.append(minority_label[0])
+            minority_label.append(minority_label[0])
+        best_frq = int(np.mean(counts))
+        if edit == self.balanced_methods[1]:
+            minority_instances, minority_label = MLSOL(self.synthetic_deviation).fit_resample(minority_instances,
+                                                                                              minority_label)
+        elif edit == self.balanced_methods[0]:
+            data = pd.DataFrame(minority_instances)
+
+            label = pd.get_dummies(minority_label, prefix='class')
+            data, label = MLSMOTE(data, label, best_frq)
+            minority_instances = data.to_numpy()
+            minority_label = np.array(label)
+        elif edit == self.balanced_methods[2]:
             distance = 10000000
             method = 'mlsmote'
             current_mean = np.mean(X)
             current_std = np.std(X)
-            print('current mean and std', current_mean, ' and ', current_std)
-            for index, value in enumerate(self.balanced_methods):
+            # print('current mean and std', current_mean, ' and ', current_std)
+            for index, value in enumerate(self.balanced_methods_details):
                 meth, mean, std = value
                 dist = np.sqrt(np.square(current_mean - mean) + np.square(current_std - std))
-                print('distance of (', value, ') is equal :', dist)
+                # print('distance of (', value, ') is equal :', dist)
                 if dist < distance:
                     distance = dist
                     method = meth
 
-            if method == 'mlsmote':
+            if method == self.balanced_methods[0]:
                 # -----mlsol------------#
 
-                self.balanced_methods.append(('mlsol', np.mean(X), np.std(X)))
-                X, y = MLSOL().fit_resample(X, y)
+                self.balanced_methods_details.append((self.balanced_methods[1], np.mean(X), np.std(X)))
+                minority_instances, minority_label = MLSOL(scal).fit_resample(minority_instances, minority_label)
             else:
                 # -----mlsmote------------#
-                self.balanced_methods.append(('mlsmote', np.mean(X), np.std(X)))
-                data = pd.DataFrame(X)
-                label = pd.get_dummies(y, prefix='class')
-                data, label = MLSMOTE(data, label, 50)
-                X = data.to_numpy()
-                y = np.array(label)
+                self.balanced_methods_details.append((self.balanced_methods[0], np.mean(X), np.std(X)))
+                data = pd.DataFrame(minority_instances)
+                label = pd.get_dummies(minority_label, prefix='class')
+                data, label = MLSMOTE(data, label, best_frq)
+                minority_instances = data.to_numpy()
+                minority_label = np.array(label)
 
-            print('current chunk use: ', method)
+            # print('current chunk use: ', method)
 
         else:
             pass
-        return X, y
+        new_X = np.concatenate([X, minority_instances], axis=0)
+        new_y = np.concatenate([y, minority_label], axis=0)
+        if edit != self.balanced_methods[2]:
+            # check overlapped
+            self.check_overlapped(X, y, minority_instances, minority_label, stream_id, edit)
+            return new_X, new_y
+        knn = NearestNeighbors(n_neighbors=3)
+        knn.fit(new_X, new_y)
+        s_x = []
+        s_y = []
+        _, indices = knn.kneighbors(minority_instances)
+        for i, index in enumerate(indices):
+            neighbour = np.unique(new_y[index])
+            if len(neighbour) == 1 and neighbour[0] == minority_classes:
+                s_x.append(minority_instances[i])
+                s_y.append(minority_label[i])
+        if len(s_x) == 0:
+            self.synthetic_deviation += 0.1
+
+            return self.balanceding(X, y, minority_classes, stream_id, edit, scal=self.synthetic_deviation)
+        # check overlapped
+        self.check_overlapped(X, y, s_x, s_y, stream_id, edit)
+        self.synthetic_deviation = 0.1
+        return np.concatenate([X, s_x], axis=0), np.concatenate([y, s_y], axis=0)
+
+    def check_overlapped(self, X, y, new_X, new_y, stream_id, imbalance_method):
+        number_of_overlapped = []
+        knn = NearestNeighbors(n_neighbors=3)
+        knn.fit(X, y)
+        _, indices = knn.kneighbors(new_X)
+        for i, index in enumerate(indices):
+            neighbour = np.unique(y[index])
+            if len(neighbour) > 1:
+                number_of_overlapped.append(new_X[i])
+        self.overlappedItems[self.balanced_methods.index(imbalance_method), stream_id - 1] = len(number_of_overlapped)
+    # Define a function to calculate IRLbl for a given label 'l'

@@ -84,7 +84,7 @@ def plot_runs(
     plt.tight_layout()
     if metrics[i] == "G-mean":
         plt.savefig(
-            "experiments/experiment1/results/svm/DDM/plots/scatter/%s_%s_%s.png" % (clfs[j], metrics[i], dependency[k]),
+            "experiments/experiment1/results-adwin/svm/DDM/plots/scatter/%s_%s_%s.png" % (clfs[j], metrics[i], dependency[k]),
             bbox_inches='tight', dpi=250, pad_inches=0.0)
 
     plt.close()
@@ -201,7 +201,7 @@ def plot_radars(
     ax.set_xticklabels([])
     ax.set_yticklabels([])
     plt.savefig(
-        "experiments/experiment1/results/svm/DDM/plots/radar/%s_%s.png" % (classifier_name, parameter_name),
+        "experiments/experiment1/results-adwin/svm/DDM/plots/radar/%s_%s.png" % (classifier_name, parameter_name),
         bbox_inches='tight', dpi=1000, pad_inches=0.0)
     plt.close()
 

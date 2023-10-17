@@ -10,6 +10,8 @@ from imblearn.under_sampling import RandomUnderSampler, CondensedNearestNeighbou
 from deslib.des import KNORAE
 from strlearn.metrics import balanced_accuracy_score
 
+from utils import KNORAU
+
 
 class SEA(ClassifierMixin, BaseEnsemble):
     """
@@ -175,7 +177,7 @@ class SEA(ClassifierMixin, BaseEnsemble):
             des.fit(self.dsel_X_, self.dsel_y_)
             prediction = des.predict(X)
         elif self.des == "KNORAE1":
-            des = KNORAE(pool_classifiers=self.ensemble_, random_state=42)
+            des = KNORAE(pool_classifiers=self.ensemble_.append(self.ensemble_[0]), random_state=42)
             des.fit(self.dsel_X_, self.dsel_y_)
             prediction = des.predict(X)
         elif self.des == "KNORAE2":

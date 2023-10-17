@@ -1,63 +1,20 @@
-
-from strlearn.streams import StreamGenerator, ARFFParser
+from strlearn.streams import ARFFParser, StreamGenerator
 
 
 def realstreams():
-    return {
-        # "krkopt": ARFFParser("datasets/allclass.arff", n_chunks=50, chunk_size=250),
-        # "krkopt2": ARFFParser("datasets/krkopt.arff", n_chunks=50, chunk_size=250),
-        # "TCP": ARFFParser("datasets/TCP.arff", n_chunks=300, chunk_size=1000),
-        # "abalone": ARFFParser("datasets/winequalitywhite/train.arff", n_chunks=20, chunk_size=100),
-        # "poker-lsn-1-2vsAll": ARFFParser("datasets/poker-lsn-1-2vsAll-pruned.arff", n_chunks=100, chunk_size=250),
-        "covtypeNorm-1-2vsAll": ARFFParser("datasets/covtypeNorm-1-2vsAll-pruned.arff", n_chunks=100, chunk_size=1000),
+    dataset={
+        "covertype": ARFFParser("X:\\Ahmed\\faculty\\phd_implementation\\paper+2+ISA\\code\\dataset\\covtype.arff",
+                                n_chunks=100, chunk_size=2000),
 
     }
-
+    return  dataset
 def realstreams2():
-    return {
-        "covtypeNorm-1-2vsAll": ARFFParser("datasets/covtypeNorm-1-2vsAll-pruned.arff", n_chunks=265, chunk_size=1000),
-        "poker-lsn-1-2vsAll": ARFFParser("datasets/poker-lsn-1-2vsAll-pruned.arff", n_chunks=359, chunk_size=1000),
-    }
+    dataset={
+        "sensors": ARFFParser("X:\\Ahmed\\faculty\\phd_implementation\\paper+2+ISA\\code\\dataset\\sensors.arff",
+                                n_chunks=100, chunk_size=2000),
 
-def moa_streams():
-    return {
-        # "gr_css5_rs804_nd1_ln1_d85_50000": ARFFParser("streams/gr_css5_rs804_nd1_ln1_d85_50000.arff", n_chunks=200, chunk_size=250),
-        # "gr_css5_rs804_nd1_ln1_d90_50000": ARFFParser("streams/gr_css5_rs804_nd1_ln1_d90_50000.arff", n_chunks=200, chunk_size=250),
-        # "gr_css5_rs804_nd1_ln1_d95_50000": ARFFParser("streams/gr_css5_rs804_nd1_ln1_d95_50000.arff", n_chunks=200, chunk_size=250),
-        "gr_css5_rs804_nd1_ln1_d97_50000": ARFFParser("streams/gr_css5_rs804_nd1_ln1_d97_50000.arff", n_chunks=200, chunk_size=250),
-        # "gr_css5_rs804_nd1_ln3_d85_50000": ARFFParser("streams/gr_css5_rs804_nd1_ln3_d85_50000.arff", n_chunks=200, chunk_size=250),
-        # "gr_css5_rs804_nd1_ln3_d90_50000": ARFFParser("streams/gr_css5_rs804_nd1_ln3_d90_50000.arff", n_chunks=200, chunk_size=250),
-        # "gr_css5_rs804_nd1_ln3_d95_50000": ARFFParser("streams/gr_css5_rs804_nd1_ln3_d95_50000.arff", n_chunks=200, chunk_size=250),
-        "gr_css5_rs804_nd1_ln3_d97_50000": ARFFParser("streams/gr_css5_rs804_nd1_ln3_d97_50000.arff", n_chunks=200, chunk_size=250),
-        # "gr_css5_rs804_nd1_ln5_d85_50000": ARFFParser("streams/gr_css5_rs804_nd1_ln5_d85_50000.arff", n_chunks=200, chunk_size=250),
-        # "gr_css5_rs804_nd1_ln5_d90_50000": ARFFParser("streams/gr_css5_rs804_nd1_ln5_d90_50000.arff", n_chunks=200, chunk_size=250),
-        # "gr_css5_rs804_nd1_ln5_d95_50000": ARFFParser("streams/gr_css5_rs804_nd1_ln5_d95_50000.arff", n_chunks=200, chunk_size=250),
-        "gr_css5_rs804_nd1_ln5_d97_50000": ARFFParser("streams/gr_css5_rs804_nd1_ln5_d97_50000.arff", n_chunks=200, chunk_size=250),
-        # "gr_css999_rs804_nd1_ln1_d85_50000": ARFFParser("streams/gr_css999_rs804_nd1_ln1_d85_50000.arff", n_chunks=200, chunk_size=250),
-        # "gr_css999_rs804_nd1_ln1_d90_50000": ARFFParser("streams/gr_css999_rs804_nd1_ln1_d90_50000.arff", n_chunks=200, chunk_size=250),
-        # "gr_css999_rs804_nd1_ln1_d95_50000": ARFFParser("streams/gr_css999_rs804_nd1_ln1_d95_50000.arff", n_chunks=200, chunk_size=250),
-        "gr_css999_rs804_nd1_ln1_d97_50000": ARFFParser("streams/gr_css999_rs804_nd1_ln1_d97_50000.arff", n_chunks=200, chunk_size=250),
-        # "gr_css999_rs804_nd1_ln3_d85_50000": ARFFParser("streams/gr_css999_rs804_nd1_ln3_d85_50000.arff", n_chunks=200, chunk_size=250),
-        # "gr_css999_rs804_nd1_ln3_d90_50000": ARFFParser("streams/gr_css999_rs804_nd1_ln3_d90_50000.arff", n_chunks=200, chunk_size=250),
-        # "gr_css999_rs804_nd1_ln3_d95_50000": ARFFParser("streams/gr_css999_rs804_nd1_ln3_d95_50000.arff", n_chunks=200, chunk_size=250),
-        "gr_css999_rs804_nd1_ln3_d97_50000": ARFFParser("streams/gr_css999_rs804_nd1_ln3_d97_50000.arff", n_chunks=200, chunk_size=250),
-        # "gr_css999_rs804_nd1_ln5_d85_50000": ARFFParser("streams/gr_css999_rs804_nd1_ln5_d85_50000.arff", n_chunks=200, chunk_size=250),
-        # "gr_css999_rs804_nd1_ln5_d90_50000": ARFFParser("streams/gr_css999_rs804_nd1_ln5_d90_50000.arff", n_chunks=200, chunk_size=250),
-        # "gr_css999_rs804_nd1_ln5_d95_50000": ARFFParser("streams/gr_css999_rs804_nd1_ln5_d95_50000.arff", n_chunks=200, chunk_size=250),
-        "gr_css999_rs804_nd1_ln5_d97_50000": ARFFParser("streams/gr_css999_rs804_nd1_ln5_d97_50000.arff", n_chunks=200, chunk_size=250),
-        # "inc_css5_rs804_nd1_ln1_d85_50000": ARFFParser("streams/inc_css5_rs804_nd1_ln1_d85_50000.arff", n_chunks=200, chunk_size=250),
-        # "inc_css5_rs804_nd1_ln1_d90_50000": ARFFParser("streams/inc_css5_rs804_nd1_ln1_d90_50000.arff", n_chunks=200, chunk_size=250),
-        # "inc_css5_rs804_nd1_ln1_d95_50000": ARFFParser("streams/inc_css5_rs804_nd1_ln1_d95_50000.arff", n_chunks=200, chunk_size=250),
-        "inc_css5_rs804_nd1_ln1_d97_50000": ARFFParser("streams/inc_css5_rs804_nd1_ln1_d97_50000.arff", n_chunks=200, chunk_size=250),
-        # "inc_css5_rs804_nd1_ln3_d85_50000": ARFFParser("streams/inc_css5_rs804_nd1_ln3_d85_50000.arff", n_chunks=200, chunk_size=250),
-        # "inc_css5_rs804_nd1_ln3_d90_50000": ARFFParser("streams/inc_css5_rs804_nd1_ln3_d90_50000.arff", n_chunks=200, chunk_size=250),
-        # "inc_css5_rs804_nd1_ln3_d95_50000": ARFFParser("streams/inc_css5_rs804_nd1_ln3_d95_50000.arff", n_chunks=200, chunk_size=250),
-        "inc_css5_rs804_nd1_ln3_d97_50000": ARFFParser("streams/inc_css5_rs804_nd1_ln3_d97_50000.arff", n_chunks=200, chunk_size=250),
-        # "inc_css5_rs804_nd1_ln5_d85_50000": ARFFParser("streams/inc_css5_rs804_nd1_ln5_d85_50000.arff", n_chunks=200, chunk_size=250),
-        # "inc_css5_rs804_nd1_ln5_d90_50000": ARFFParser("streams/inc_css5_rs804_nd1_ln5_d90_50000.arff", n_chunks=200, chunk_size=250),
-        # "inc_css5_rs804_nd1_ln5_d95_50000": ARFFParser("streams/inc_css5_rs804_nd1_ln5_d95_50000.arff", n_chunks=200, chunk_size=250),
-        "inc_css5_rs804_nd1_ln5_d97_50000": ARFFParser("streams/inc_css5_rs804_nd1_ln5_d97_50000.arff", n_chunks=200, chunk_size=250),
     }
+    return  dataset
 
 
 def toystreams(random_state):
@@ -66,12 +23,13 @@ def toystreams(random_state):
     binary_distributions = [[0.97, 0.03]]
     distributions=Multi_distributions
     label_noises = [
+
+        0.05,
         0.01,
         0.03,
-        0.05,
     ]
     incremental = [(5,True),(5,False), (100,True)]
-    n_drifts = 10
+    n_drifts = 80
 
     # Prepare streams
     streams = {}
@@ -87,7 +45,7 @@ def toystreams(random_state):
                         concept_sigmoid_spacing=spacing,
                         n_drifts=n_drifts,
                         chunk_size=250,
-                        n_chunks=200,
+                        n_chunks=100,
                         n_clusters_per_class=1,
                         n_features=8,
                         n_informative=8,
@@ -104,44 +62,32 @@ def toystreams(random_state):
     return streams
 
 
-def streams(random_state):
+def synthetic_streams(random_state):
     # Variables
-    # distributions = [[0.95, 0.05], [0.90, 0.10], [0.85, 0.15]]
-    distributions = [[0.97, 0.03]]
-    label_noises = [
-        0.01,
-        0.03,
-        0.05,
-    ]
-    incremental = [False, True]
-    ccs = [5, None]
-    n_drifts = 1
+    distribution= [0.77, 0.03,0.22]
+    n_drifts = 30
 
     # Prepare streams
     streams = {}
-    for drift_type in incremental:
-        for distribution in distributions:
-            for flip_y in label_noises:
-                for spacing in ccs:
-                    stream = StreamGenerator(
-                        incremental=drift_type,
-                        weights=distribution,
-                        random_state=random_state,
-                        y_flip=flip_y,
-                        concept_sigmoid_spacing=spacing,
-                        n_drifts=n_drifts,
-                        chunk_size=250,
-                        n_chunks=200,
-                        n_clusters_per_class=1,
-                        n_features=8,
-                        n_informative=8,
-                        n_redundant=0,
-                        n_repeated=0,
-                    )
-                    if spacing == None and drift_type == True:
-                        pass
-                    else:
-                        streams.update({str(stream): stream})
+
+    stream = StreamGenerator(
+        incremental=False,
+        weights=distribution,
+        n_classes=3,
+        random_state=random_state,
+        y_flip=0.05,
+        concept_sigmoid_spacing=5,
+        n_drifts= 30,
+        chunk_size=2000,
+        n_chunks=100,
+        n_clusters_per_class=1,
+        n_features=8,
+        n_informative=8,
+        n_redundant=0,
+        n_repeated=0,
+    )
+
+    streams.update({str(stream): stream})
 
     return streams
 
@@ -183,4 +129,3 @@ def timestream(chunk_size):
                         streams.update({str(stream): stream})
 
     return streams
-toystreams(100)
